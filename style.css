@@ -76,6 +76,7 @@ body.cal .cal-panel{display:block}
 .m .crown{font-size:.8rem;flex-shrink:0;margin-top:1px}
 .m .m-info{flex:1;min-width:0}
 .m .mn{font-weight:800;font-size:1rem}
+.m .mi-nick{font-size:.8rem;color:var(--sub);margin-top:1px}
 .m .mi-intro{font-size:.88rem;color:#3a4a5a;margin-top:2px;line-height:1.4}
 .m .mi-fun{font-size:.85rem;color:var(--accent);margin-top:4px;line-height:1.4;font-style:italic}
 .m .m-actions{position:absolute;top:4px;right:4px;display:flex;gap:2px}

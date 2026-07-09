@@ -361,7 +361,7 @@
         const sTop  = s.offsetTop;
         const fontSize = parseFloat(window.getComputedStyle(s).fontSize) || 36;
         const outFontSize = fontSize * ratioX;
-        octx.font = outFontSize + "px serif";
+        octx.font = outFontSize + "px 'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif";
         octx.textBaseline = "top";
         octx.fillText(s.textContent, sLeft * ratioX, sTop * ratioY);
       });

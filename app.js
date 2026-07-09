@@ -8,7 +8,7 @@ const SUPABASE_ANON_KEY = "sb_publishable_a8F4ZmbqCT0vmR42Od0wlQ_A6A64U8l";
 const BUCKET        = "photos";
 const FRAME_SRC     = "frame.png";
 const TEAM_PHOTO_SRC = "team-photo.jpg";
-const ORG_TEAM      = "Neobjuk Baeum";
+const ORG_TEAM      = "Neobjuk Learning";
 
 /* -------------------- SUPABASE CLIENT -------------------- */
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -144,6 +144,7 @@ function render() {
         mlist += `<div class="m${isLeader ? " is-leader" : ""}" style="top:${top}%;height:${cellH}%">
           <div class="m-info">
             <div class="mn">${esc(m.name)}${isLeader ? ' <span class="crown">👑</span>' : ''}</div>
+            ${m.nickname ? `<div class="mi-nick">"${esc(m.nickname)}"</div>` : ''}
             ${introLine ? `<div class="mi-intro">${esc(introLine)}</div>` : ''}
             ${funLine ? `<div class="mi-fun">"${esc(funLine)}"</div>` : ''}
           </div>
@@ -249,6 +250,7 @@ function openEdit(id) {
   document.getElementById("sheet-edit").style.display    = "block";
   document.getElementById("edit-context").textContent = m.team;
   document.getElementById("e-name").value = m.name;
+  document.getElementById("e-nickname").value = m.nickname || "";
 
   // Split intro by " · "
   const parts = m.intro.split(" · ");
@@ -284,6 +286,7 @@ function closeModal() {
   editorResultBlob = null;
   document.getElementById("f-team").value = "";
   document.getElementById("f-name").value = "";
+  document.getElementById("f-nickname").value = "";
   document.getElementById("f-intro1").value = "";
   document.getElementById("f-intro").value = "";
   document.getElementById("f-photo").value = "";
@@ -312,6 +315,7 @@ function closeModal() {
 document.getElementById("btn-submit-member").onclick = async function () {
   const st    = document.getElementById("status-member");
   const name  = document.getElementById("f-name").value.trim();
+  const nickname = document.getElementById("f-nickname").value.trim();
   const intro1 = document.getElementById("f-intro1").value.trim();
   const intro2 = document.getElementById("f-intro").value.trim();
   const intro  = [intro1, intro2].filter(Boolean).join(" · ");
@@ -372,6 +376,7 @@ document.getElementById("btn-submit-member").onclick = async function () {
       batch: currentBatch,
       team: modalTeam,
       name,
+      nickname: nickname || "",
       intro: intro || "",
       role: isLeader ? "leader" : "member",
       photo_url: publicUrl
@@ -431,6 +436,7 @@ document.getElementById("btn-submit-team").onclick = async function () {
 document.getElementById("btn-submit-edit").onclick = async function () {
   const st     = document.getElementById("status-edit");
   const name   = document.getElementById("e-name").value.trim();
+  const nickname = document.getElementById("e-nickname").value.trim();
   const intro1 = document.getElementById("e-intro1").value.trim();
   const intro2 = document.getElementById("e-intro2").value.trim();
   const intro  = [intro1, intro2].filter(Boolean).join(" · ");
@@ -442,7 +448,7 @@ document.getElementById("btn-submit-edit").onclick = async function () {
   btn.disabled = true;
 
   try {
-    const updates = { name, intro, role: isLeader ? "leader" : "member" };
+    const updates = { name, nickname: nickname || "", intro, role: isLeader ? "leader" : "member" };
 
     // If editor produced a new photo
     if (editorResultBlob) {
