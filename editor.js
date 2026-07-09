@@ -354,23 +354,34 @@
       // 2. draw brush canvas
       octx.drawImage(canvas, 0, 0, canvas.width, canvas.height, 0, 0, outW, outH);
 
-      // 3. draw stickers
+      // 3. draw stickers using temporary canvas to render emoji reliably
       const stickers = box.querySelectorAll(".sticker-on-photo");
-      stickers.forEach(s => {
-        const sLeft = s.offsetLeft;
-        const sTop  = s.offsetTop;
-        const fontSize = parseFloat(window.getComputedStyle(s).fontSize) || 36;
-        const outFontSize = fontSize * ratioX;
-        octx.font = outFontSize + "px 'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif";
-        octx.textBaseline = "top";
-        octx.fillText(s.textContent, sLeft * ratioX, sTop * ratioY);
+      const stickerPromises = Array.from(stickers).map(s => {
+        return new Promise(res => {
+          const sLeft = s.offsetLeft;
+          const sTop  = s.offsetTop;
+          const fontSize = parseFloat(window.getComputedStyle(s).fontSize) || 36;
+          const outSize = Math.round(fontSize * ratioX);
+          // render emoji to a temp canvas, then drawImage
+          const tc = document.createElement("canvas");
+          tc.width = outSize * 1.2;
+          tc.height = outSize * 1.2;
+          const tctx = tc.getContext("2d");
+          tctx.font = outSize + "px 'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif";
+          tctx.textBaseline = "top";
+          tctx.fillText(s.textContent, 0, 0);
+          octx.drawImage(tc, sLeft * ratioX, sTop * ratioY);
+          res();
+        });
       });
 
-      oc.toBlob(
-        blob => blob ? resolve(blob) : reject(new Error("Compositing failed")),
-        "image/jpeg",
-        0.88
-      );
+      Promise.all(stickerPromises).then(() => {
+        oc.toBlob(
+          blob => blob ? resolve(blob) : reject(new Error("Compositing failed")),
+          "image/jpeg",
+          0.88
+        );
+      });
     });
   }
 
