@@ -3,283 +3,181 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>KAIST × UITS · 4-Cut Intro Wall</title>
+<title>Our First Page · KAIST × UITS</title>
+<link rel="stylesheet" href="style.css" />
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<style>
-  :root{
-    /* ==== 4-cut frame: cell positions as % of the frame image ====
-       Tweak these until the 4 photo boxes sit exactly on the white cells.
-       Open the site with ?calibrate=1 to see red outlines + % labels. */
-    --cell-left:5.5%; --cell-width:89%; --cell-h:19.5%;
-    --c1-top:1.8%; --c2-top:23.5%; --c3-top:45.2%; --c4-top:67.0%;
-
-    --bg:#eef4fb; --ink:#22303c; --sub:#8a97a5; --line:#dbe6f2;
-    --accent:#2f6db5; --accent2:#d94b57; --card:#ffffff;
-    --shadow:0 10px 28px rgba(40,70,110,.12);
-  }
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans KR",sans-serif;
-    background:var(--bg);color:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased}
-  header{text-align:center;padding:26px 16px 4px}
-  header h1{font-size:1.4rem;letter-spacing:.01em;color:var(--accent)}
-  header h1 span{color:var(--accent2)}
-  header p{color:var(--sub);font-size:.88rem;margin-top:4px}
-  .wrap{max-width:1120px;margin:0 auto;padding:0 16px 120px}
-
-  .banner{background:#fff4e5;border:1px solid #ffd699;color:#8a5a00;border-radius:12px;
-    padding:12px 16px;margin:14px 0;font-size:.85rem}
-  .banner code{background:#00000010;padding:1px 5px;border-radius:4px}
-
-  .tabs{display:flex;gap:8px;justify-content:center;margin:18px 0 6px;flex-wrap:wrap}
-  .tab{border:1px solid var(--line);background:var(--card);color:var(--sub);
-    padding:9px 22px;border-radius:999px;font-weight:600;cursor:pointer;font-size:.92rem;transition:.15s}
-  .tab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
-  .count{color:var(--sub);text-align:center;font-size:.82rem;margin-bottom:16px}
-
-  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:26px}
-
-  .team{background:var(--card);border:1px solid var(--line);border-radius:18px;
-    box-shadow:var(--shadow);padding:16px;display:flex;gap:14px}
-  @media(max-width:520px){.team{flex-direction:column;align-items:center}}
-
-  /* ---- the 4-cut filmstrip frame ---- */
-  .frame{position:relative;width:190px;flex:0 0 190px}
-  .frame .frameimg{width:100%;display:block}
-  /* fallback look if frame.png is missing */
-  .frame.noimg{background:#f4f8fd;border:1px solid var(--line);border-radius:10px;aspect-ratio:895/2410}
-  .cell{position:absolute;left:var(--cell-left);width:var(--cell-width);height:var(--cell-h);
-    overflow:hidden;border-radius:2px;background:#eaf1f9}
-  .cell.c1{top:var(--c1-top)} .cell.c2{top:var(--c2-top)}
-  .cell.c3{top:var(--c3-top)} .cell.c4{top:var(--c4-top)}
-  .cell img{width:100%;height:100%;object-fit:cover;display:block}
-  .cell .ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-    color:#a9bdd4;font-size:1.5rem}
-  .cell.org .ph{color:#c99a3f}
-
-  /* calibrate mode */
-  body.cal .cell{outline:2px solid red;background:rgba(255,0,0,.12)}
-  body.cal .cell::after{content:attr(data-lbl);position:absolute;top:2px;left:3px;
-    font-size:9px;color:red;font-weight:700;background:#fff8}
-
-  .members{flex:1;min-width:0;display:flex;flex-direction:column;gap:11px;padding-top:4px}
-  .team-name{font-weight:700;font-size:1rem;display:flex;align-items:center;gap:7px;color:var(--accent)}
-  .team-name .dot{width:8px;height:8px;border-radius:50%;background:var(--accent2)}
-  .m{border-left:3px solid var(--line);padding-left:10px}
-  .m .mn{font-weight:700;font-size:.9rem}
-  .m .mi{font-size:.82rem;color:#566573;word-break:break-word}
-  .m.empty .mn{color:var(--sub);font-weight:500;font-style:italic}
-  @media(max-width:520px){.members{width:100%}}
-
-  .empty-state{text-align:center;color:var(--sub);padding:60px 16px;font-size:.95rem}
-
-  .fab{position:fixed;right:20px;bottom:22px;background:var(--accent2);color:#fff;border:none;
-    border-radius:999px;padding:15px 22px;font-size:1rem;font-weight:700;cursor:pointer;
-    box-shadow:0 8px 22px rgba(217,75,87,.4);z-index:20}
-
-  .overlay{position:fixed;inset:0;background:rgba(20,40,60,.45);display:none;align-items:flex-end;
-    justify-content:center;z-index:30}
-  .overlay.on{display:flex}
-  .sheet{background:#fff;width:100%;max-width:460px;border-radius:20px 20px 0 0;padding:22px 20px 26px;
-    max-height:92vh;overflow:auto}
-  @media(min-width:560px){.overlay{align-items:center}.sheet{border-radius:20px}}
-  .sheet h2{font-size:1.15rem;margin-bottom:4px}
-  .sheet .hint{color:var(--sub);font-size:.82rem;margin-bottom:16px}
-  label{display:block;font-size:.82rem;font-weight:600;margin:12px 0 5px}
-  input,select,textarea{width:100%;border:1px solid var(--line);border-radius:10px;
-    padding:11px 12px;font-size:.95rem;font-family:inherit;background:#fbfdff}
-  textarea{resize:vertical;min-height:64px}
-  .row2{display:flex;gap:10px}.row2>div{flex:1}
-  .filepick{border:1.5px dashed var(--line);border-radius:12px;padding:14px;text-align:center;
-    color:var(--sub);cursor:pointer;font-size:.85rem}
-  .filepick.has{border-color:var(--accent);color:var(--accent)}
-  .preview{width:84px;height:84px;object-fit:cover;border-radius:8px;margin:10px auto 0;display:none}
-  .actions{display:flex;gap:10px;margin-top:20px}
-  .btn{flex:1;border:none;border-radius:12px;padding:13px;font-weight:700;font-size:.95rem;cursor:pointer}
-  .btn.primary{background:var(--accent2);color:#fff}
-  .btn.ghost{background:#eef2f7;color:var(--ink)}
-  .btn:disabled{opacity:.5;cursor:not-allowed}
-  .status{font-size:.82rem;color:var(--sub);text-align:center;margin-top:10px;min-height:1em}
-</style>
+<script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
 </head>
 <body>
-<header>
-  <h1>KAIST <span>×</span> UITS · 4-Cut Intro Wall</h1>
-  <p>Add your photo &amp; a short intro — meet everyone in your class 💙</p>
-</header>
 
-<div class="wrap">
-  <div id="banner" class="banner" style="display:none"></div>
-
-  <div class="tabs">
+<div class="topbar">
+  <h1>📸 Our First Page <span class="x">·</span> KAIST × UITS</h1>
+  <div class="topbar-right">
+    <span id="count" class="count"></span>
     <button class="tab active" data-batch="1">Batch 1</button>
     <button class="tab" data-batch="2">Batch 2</button>
   </div>
-  <div id="count" class="count"></div>
-
-  <div id="wall" class="grid"></div>
 </div>
 
-<button id="fab" class="fab">＋ Add me</button>
-
-<div id="overlay" class="overlay">
-  <div class="sheet">
-    <h2>Add yourself ✨</h2>
-    <p class="hint">Your photo fills one cut of your team's 4-cut frame. Your intro shows next to it.</p>
-    <div class="row2">
-      <div>
-        <label>Batch</label>
-        <select id="f-batch"><option value="1">Batch 1</option><option value="2">Batch 2</option></select>
-      </div>
-      <div>
-        <label>Role</label>
-        <select id="f-role">
-          <option value="member">Me (team member)</option>
-          <option value="team">Team photo (4th cut · organizers)</option>
-        </select>
-      </div>
-    </div>
-    <label>Team name / number</label>
-    <input id="f-team" list="teamlist" placeholder="e.g. Team 3" autocomplete="off" />
-    <datalist id="teamlist"></datalist>
-    <div id="member-fields">
-      <label>Your name</label>
-      <input id="f-name" placeholder="e.g. Rahim" />
-      <label>Short intro (major, hobby, what you want to build…)</label>
-      <textarea id="f-intro" placeholder="2nd year CSE · loves cricket · wants to build a study app"></textarea>
-    </div>
-    <label>Photo</label>
-    <div id="filepick" class="filepick">📷 Tap to choose a photo</div>
-    <input id="f-photo" type="file" accept="image/*" style="display:none" />
-    <img id="preview" class="preview" alt="preview" />
-    <div class="actions">
-      <button id="cancel" class="btn ghost">Cancel</button>
-      <button id="submit" class="btn primary">Post</button>
-    </div>
-    <div id="status" class="status"></div>
+<div class="guide">
+  <div class="guide-box">
+    <strong>How it works:</strong> Join your team, fill in your intro & photo, and pick your team leader for a 👑!
   </div>
 </div>
 
-<script>
-/* ===================== CONFIG ===================== *
- * 1) Save your frame image next to this file as  frame.png
- * 2) Paste your Supabase values below (see SETUP.md).
- * Until then it runs in PREVIEW MODE with sample data. */
-const SUPABASE_URL = "YOUR_SUPABASE_URL";
-const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
-const BUCKET = "photos";
-const FRAME_SRC = "frame.png";
-/* ================================================== */
+<div class="canvas">
+  <div class="canvas-inner" id="wall"></div>
+</div>
 
-const configured = !SUPABASE_URL.startsWith("YOUR_") && !SUPABASE_ANON_KEY.startsWith("YOUR_");
-let sb = configured ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
-if (new URLSearchParams(location.search).has("calibrate")) document.body.classList.add("cal");
+<div class="toast" id="toast"></div>
 
-let currentBatch = 1, rows = [];
-const SAMPLE = [
-  {batch:1,team:"Team 1",name:"Rahim",intro:"2nd yr CSE · loves cricket 🏏 · a study app",role:"member",photo_url:""},
-  {batch:1,team:"Team 1",name:"Ayesha",intro:"3rd yr EEE · digital art · a drawing game",role:"member",photo_url:""},
-  {batch:1,team:"Team 1",name:"Karim",intro:"1st yr · never coded! · excited to try",role:"member",photo_url:""},
-  {batch:1,team:"Team 2",name:"Nadia",intro:"CSE · K-pop fan 💜 · a fan community app",role:"member",photo_url:""},
-  {batch:2,team:"Team 1",name:"Fahim",intro:"SWE · football · a match-score tracker",role:"member",photo_url:""},
-];
+<!-- Photo Editor (fullscreen) -->
+<div class="editor-overlay" id="editorOverlay">
+  <div class="editor-top">
+    <button class="ebtn cancel" onclick="closeEditor(false)">Cancel</button>
+    <button class="ebtn done" onclick="closeEditor(true)">Done</button>
+  </div>
+  <div class="editor-canvas-wrap" id="editorBox">
+    <img class="editor-bg" id="editorImg" />
+    <canvas class="draw-layer" id="drawCanvas"></canvas>
+  </div>
+  <div class="editor-controls">
+    <span>Zoom</span>
+    <input type="range" id="editorZoom" min="100" max="300" value="100" />
+  </div>
+  <div class="editor-tools">
+    <button class="tool-btn active" id="tool-move" onclick="setTool('move')">Move</button>
+    <button class="tool-btn" id="tool-sticker" onclick="setTool('sticker')">Stickers</button>
+    <button class="tool-btn" id="tool-brush" onclick="setTool('brush')">Brush</button>
+  </div>
+  <div id="toolPanel-sticker" style="display:none">
+    <div class="sticker-tray" id="editorStickerTray"></div>
+    <div class="editor-controls">
+      <span>Size</span>
+      <input type="range" id="stickerSize" min="20" max="80" value="36" />
+    </div>
+  </div>
+  <div id="toolPanel-brush" style="display:none">
+    <div class="brush-colors" id="brushColors"></div>
+    <div class="brush-sizes">
+      <span>Size</span>
+      <input type="range" id="brushSize" min="2" max="20" value="4" />
+    </div>
+  </div>
+</div>
 
-function esc(s){return (s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+<!-- Calibration -->
+<div class="cal-panel" id="calPanel">
+  <h3>Cell Calibration</h3>
+  <div class="sl"><label>left <span id="v-left">24.2%</span></label>
+    <input type="range" id="r-left" min="0" max="50" step="0.1" value="24.2"></div>
+  <div class="sl"><label>width <span id="v-width">51.1%</span></label>
+    <input type="range" id="r-width" min="20" max="100" step="0.1" value="51.1"></div>
+  <div class="sl"><label>height <span id="v-height">18%</span></label>
+    <input type="range" id="r-height" min="10" max="30" step="0.1" value="18"></div>
+  <hr style="margin:10px 0;border:none;border-top:1px solid #eee">
+  <div class="sl"><label>c1 top <span id="v-c1">5%</span></label>
+    <input type="range" id="r-c1" min="0" max="30" step="0.1" value="5"></div>
+  <div class="sl"><label>c2 top <span id="v-c2">25.1%</span></label>
+    <input type="range" id="r-c2" min="10" max="50" step="0.1" value="25.1"></div>
+  <div class="sl"><label>c3 top <span id="v-c3">45%</span></label>
+    <input type="range" id="r-c3" min="30" max="70" step="0.1" value="45"></div>
+  <div class="sl"><label>c4 top <span id="v-c4">64.6%</span></label>
+    <input type="range" id="r-c4" min="50" max="90" step="0.1" value="64.6"></div>
+  <button class="copy-btn" id="copyCSS">Copy CSS values</button>
+  <div class="css-out" id="cssOut"></div>
+</div>
 
-function frameHTML(members, teamPhoto){
-  const cell=(i,cls,url,icon)=>
-    `<div class="cell c${i} ${cls}" data-lbl="c${i}">`+
-      (url?`<img src="${esc(url)}" alt="">`:`<span class="ph">${icon}</span>`)+`</div>`;
-  let c="";
-  for(let i=0;i<3;i++){const m=members[i];c+=cell(i+1,"",m&&m.photo_url,m?"🙂":"＋");}
-  c+=cell(4,"org",teamPhoto&&teamPhoto.photo_url,"📸");
-  return `<div class="frame"><img class="frameimg" src="${FRAME_SRC}" alt="frame"
-            onerror="this.style.display='none';this.parentNode.classList.add('noimg')">${c}</div>`;
-}
+<!-- Modals -->
+<div id="overlay" class="overlay">
+  <!-- Add Member -->
+  <div class="sheet" id="sheet-member">
+    <h2>Add yourself</h2>
+    <div id="modal-context" class="context"></div>
+    <div class="field">
+      <label>Your name</label>
+      <input id="f-name" placeholder="e.g. Rahim" />
+    </div>
+    <div class="field">
+      <label>Introduce you!</label>
+      <input id="f-intro1" placeholder="e.g. 2nd year CSE from Dhaka" />
+    </div>
+    <div class="field">
+      <label>Tell us something fun about you!</label>
+      <textarea id="f-intro" placeholder="e.g. I can eat 10 biryanis in one sitting"></textarea>
+    </div>
+    <div class="field">
+      <label>Your best photo</label>
+      <div id="filepick" class="filepick">Tap to choose a photo</div>
+      <input id="f-photo" type="file" accept="image/*,.heic,.heif" style="display:none" />
+      <img id="photoPreview" style="display:none;width:100%;aspect-ratio:10/7;object-fit:cover;border-radius:10px;margin-top:10px;cursor:pointer" onclick="openEditor()" title="Click to edit & decorate" />
+    </div>
+    <label class="check-field" id="leader-check">
+      <input type="checkbox" id="f-leader" />
+      <span>👑 I'm the team leader!</span>
+    </label>
+    <div class="actions">
+      <button class="btn ghost" onclick="closeModal()">Cancel</button>
+      <button id="btn-submit-member" class="btn primary">Post</button>
+    </div>
+    <div id="status-member" class="status"></div>
+  </div>
 
-function render(){
-  const data = configured ? rows : SAMPLE;
-  const br = data.filter(r=>Number(r.batch)===currentBatch);
-  const teams = new Map();
-  for(const r of br){ if(!teams.has(r.team)) teams.set(r.team,[]); teams.get(r.team).push(r); }
+  <!-- Create Team -->
+  <div class="sheet" id="sheet-team" style="display:none">
+    <h2>Create new team</h2>
+    <div class="field">
+      <label>Team number</label>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-weight:700;font-size:1rem;white-space:nowrap">Team</span>
+        <input id="f-team" placeholder="1" autocomplete="off" type="number" min="1" style="width:60px;text-align:center" />
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn ghost" onclick="closeModal()">Cancel</button>
+      <button id="btn-submit-team" class="btn primary">Create</button>
+    </div>
+    <div id="status-team" class="status"></div>
+  </div>
 
-  document.getElementById("count").textContent =
-    `${teams.size} team${teams.size!==1?"s":""} · ${br.length} people`;
-  const wall = document.getElementById("wall");
-  if(teams.size===0){ wall.innerHTML=`<div class="empty-state">No one here yet — be the first! Tap <b>＋ Add me</b>.</div>`; return; }
+  <!-- Edit Member -->
+  <div class="sheet" id="sheet-edit" style="display:none">
+    <h2>Edit</h2>
+    <div id="edit-context" class="context"></div>
+    <div class="field">
+      <label>Name</label>
+      <input id="e-name" />
+    </div>
+    <div class="field">
+      <label>Introduce you!</label>
+      <input id="e-intro1" />
+    </div>
+    <div class="field">
+      <label>Tell us something fun about you!</label>
+      <textarea id="e-intro2"></textarea>
+    </div>
+    <div class="field">
+      <label>Photo</label>
+      <img id="editPhotoPreview" style="display:none;width:100%;aspect-ratio:10/7;object-fit:cover;border-radius:10px;cursor:pointer" onclick="openEditorForEdit()" title="Click to edit & decorate" />
+      <div id="editPhotoActions" style="margin-top:8px;display:flex;gap:8px">
+        <button class="btn ghost" style="flex:none;padding:8px 14px;font-size:.82rem" onclick="openEditorForEdit()">Edit photo</button>
+        <button class="btn ghost" style="flex:none;padding:8px 14px;font-size:.82rem" onclick="changeEditPhoto()">Change photo</button>
+      </div>
+      <input id="e-photo" type="file" accept="image/*,.heic,.heif" style="display:none" />
+    </div>
+    <label class="check-field" id="edit-leader-check">
+      <input type="checkbox" id="e-leader" />
+      <span>👑 I'm the team leader!</span>
+    </label>
+    <div class="actions">
+      <button class="btn ghost" onclick="closeModal()">Cancel</button>
+      <button id="btn-submit-edit" class="btn primary">Save</button>
+    </div>
+    <div id="status-edit" class="status"></div>
+  </div>
+</div>
 
-  let html="";
-  for(const [team,list] of teams){
-    const members=list.filter(r=>r.role!=="team");
-    const teamPhoto=list.find(r=>r.role==="team");
-    let mlist=members.map(m=>`<div class="m"><div class="mn">${esc(m.name)}</div><div class="mi">${esc(m.intro)}</div></div>`).join("");
-    for(let i=members.length;i<3;i++) mlist+=`<div class="m empty"><div class="mn">waiting for a teammate…</div></div>`;
-    html+=`<div class="team">${frameHTML(members,teamPhoto)}
-      <div class="members"><div class="team-name"><span class="dot"></span>${esc(team)}</div>${mlist}</div></div>`;
-  }
-  wall.innerHTML=html;
-  document.getElementById("teamlist").innerHTML=[...new Set(br.map(r=>r.team))].map(t=>`<option value="${esc(t)}">`).join("");
-}
-
-async function load(){
-  if(!configured){ render(); return; }
-  const {data,error}=await sb.from("members").select("*").order("created_at",{ascending:true});
-  if(error){ const b=document.getElementById("banner"); b.style.display="block"; b.innerHTML="⚠️ Could not load data: "+esc(error.message); return; }
-  rows=data||[]; render();
-}
-
-function resizeImage(file,max=900){
-  return new Promise((res,rej)=>{const img=new Image();
-    img.onload=()=>{let{width:w,height:h}=img;
-      if(w>h&&w>max){h=Math.round(h*max/w);w=max;} else if(h>=w&&h>max){w=Math.round(w*max/h);h=max;}
-      const c=document.createElement("canvas");c.width=w;c.height=h;c.getContext("2d").drawImage(img,0,0,w,h);
-      c.toBlob(b=>b?res(b):rej(new Error("resize failed")),"image/jpeg",0.85);};
-    img.onerror=rej; img.src=URL.createObjectURL(file);});
-}
-
-let chosenFile=null;
-async function submit(){
-  const batch=document.getElementById("f-batch").value, role=document.getElementById("f-role").value;
-  const team=document.getElementById("f-team").value.trim(), name=document.getElementById("f-name").value.trim();
-  const intro=document.getElementById("f-intro").value.trim(), st=document.getElementById("status");
-  if(!team){st.textContent="Please enter your team name.";return;}
-  if(role==="member"&&!name){st.textContent="Please enter your name.";return;}
-  if(!chosenFile){st.textContent="Please choose a photo.";return;}
-  if(!configured){st.textContent="⚠️ Preview mode — not connected yet. (See SETUP.md)";return;}
-  const btn=document.getElementById("submit");btn.disabled=true;
-  try{
-    st.textContent="Optimizing photo…"; const blob=await resizeImage(chosenFile);
-    const safe=(team+"_"+(name||"team")).replace(/[^a-zA-Z0-9]/g,"-");
-    const path=`b${batch}/${Date.now()}_${safe}.jpg`;
-    st.textContent="Uploading…"; const up=await sb.storage.from(BUCKET).upload(path,blob,{contentType:"image/jpeg"}); if(up.error)throw up.error;
-    const {data:{publicUrl}}=sb.storage.from(BUCKET).getPublicUrl(path);
-    st.textContent="Saving…"; const ins=await sb.from("members").insert({batch:Number(batch),team,name:name||"Team",intro,role,photo_url:publicUrl}); if(ins.error)throw ins.error;
-    closeModal(); await load();
-  }catch(e){console.error(e);st.textContent="Error: "+(e.message||e);}finally{btn.disabled=false;}
-}
-
-function openModal(){document.getElementById("f-batch").value=String(currentBatch);document.getElementById("overlay").classList.add("on");}
-function closeModal(){document.getElementById("overlay").classList.remove("on");chosenFile=null;
-  document.getElementById("f-team").value="";document.getElementById("f-name").value="";document.getElementById("f-intro").value="";
-  document.getElementById("preview").style.display="none";
-  const fp=document.getElementById("filepick");fp.classList.remove("has");fp.textContent="📷 Tap to choose a photo";
-  document.getElementById("status").textContent="";}
-
-document.getElementById("fab").onclick=openModal;
-document.getElementById("cancel").onclick=closeModal;
-document.getElementById("overlay").addEventListener("click",e=>{if(e.target.id==="overlay")closeModal();});
-document.getElementById("submit").onclick=submit;
-document.getElementById("f-role").addEventListener("change",e=>{document.getElementById("member-fields").style.display=e.target.value==="team"?"none":"block";});
-document.getElementById("filepick").onclick=()=>document.getElementById("f-photo").click();
-document.getElementById("f-photo").addEventListener("change",e=>{const f=e.target.files[0];if(!f)return;chosenFile=f;
-  const fp=document.getElementById("filepick");fp.classList.add("has");fp.textContent="✓ "+f.name;
-  const pv=document.getElementById("preview");pv.src=URL.createObjectURL(f);pv.style.display="block";});
-document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>{
-  document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));t.classList.add("active");
-  currentBatch=Number(t.dataset.batch);render();}));
-
-if(!configured){const b=document.getElementById("banner");b.style.display="block";
-  b.innerHTML="👀 <b>Preview mode</b> — sample data. To go live: save your frame as <code>frame.png</code> here, then add your Supabase keys (see SETUP.md). Add <code>?calibrate=1</code> to the URL to line up the photo cells.";}
-load();
-</script>
+<script src="editor.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
