@@ -95,7 +95,7 @@ function frameHTML(members, isOrgTeam) {
 }
 
 function render() {
-  const br = rows.filter(r => Number(r.batch) === currentBatch);
+  const br = rows.filter(r => Number(r.batch) === currentBatch || r.team === ORG_TEAM);
   const teams = new Map();
   for (const r of br) {
     if (!teams.has(r.team)) teams.set(r.team, []);
