@@ -23,7 +23,7 @@
   let zoomSlider;
   let btnMove, btnSticker, btnBrush;
   let panelSticker, panelBrush;
-  let stickerTray, stickerSizeSlider;
+  let stickerTray;
   let brushColorsWrap, brushSizeSlider;
 
   function refs() {
@@ -40,7 +40,6 @@
     panelSticker  = document.getElementById("toolPanel-sticker");
     panelBrush    = document.getElementById("toolPanel-brush");
     stickerTray   = document.getElementById("editorStickerTray");
-    stickerSizeSlider = document.getElementById("stickerSize");
     brushColorsWrap   = document.getElementById("brushColors");
     brushSizeSlider   = document.getElementById("brushSize");
     buildStickerTray();
@@ -180,26 +179,18 @@
     el.className = "sticker-on-photo";
     el.dataset.emoji = emoji;
     el.textContent = emoji;
-    const size = parseInt(stickerSizeSlider.value, 10) || 36;
+    const size = 36;
     el.style.fontSize = size + "px";
     el.style.left = (box.offsetWidth / 2 - size / 2) + "px";
     el.style.top  = (box.offsetHeight / 2 - size / 2) + "px";
     el.style.position = "absolute";
 
-    // hover UI: delete + size up/down
-    const ui = document.createElement("div");
-    ui.className = "sticker-ui";
-    const btnUp = document.createElement("button");
-    btnUp.className = "s-up"; btnUp.textContent = "▲";
-    btnUp.onclick = e => { e.stopPropagation(); const s = parseFloat(el.style.fontSize)||36; el.style.fontSize = Math.min(120,s+6)+"px"; };
-    const btnDown = document.createElement("button");
-    btnDown.className = "s-down"; btnDown.textContent = "▼";
-    btnDown.onclick = e => { e.stopPropagation(); const s = parseFloat(el.style.fontSize)||36; el.style.fontSize = Math.max(16,s-6)+"px"; };
+    // hover UI: delete only
     const btnDel = document.createElement("button");
-    btnDel.className = "s-del"; btnDel.textContent = "×";
+    btnDel.className = "sticker-del";
+    btnDel.textContent = "×";
     btnDel.onclick = e => { e.stopPropagation(); el.remove(); if(selectedSticker===el) selectedSticker=null; };
-    ui.append(btnUp, btnDown, btnDel);
-    el.appendChild(ui);
+    el.appendChild(btnDel);
 
     // resize handle (corner drag)
     const handle = document.createElement("div");
@@ -314,11 +305,6 @@
     }
   }
 
-  /* sticker size slider – update selected sticker live */
-  function onStickerSizeChange() {
-    if (!selectedSticker) return;
-    selectedSticker.style.fontSize = stickerSizeSlider.value + "px";
-  }
 
   /* ============================================================
      BRUSH DRAWING
@@ -483,14 +469,21 @@
     if (!overlay) return;
 
     if (done) {
+      console.log("Editor Done: compositing...", {
+        imgW: img.naturalWidth, imgH: img.naturalHeight,
+        boxW: box.offsetWidth, boxH: box.offsetHeight,
+        stickers: box.querySelectorAll(".sticker-on-photo").length
+      });
       compositeToBlob()
         .then(blob => {
+          console.log("Composite success, blob size:", blob.size);
           overlay.classList.remove("on");
           detachEvents();
           if (resolvePromise) { resolvePromise(blob); resolvePromise = null; }
         })
         .catch(err => {
           console.error("Editor composite error:", err);
+          alert("Photo save failed: " + err.message);
           overlay.classList.remove("on");
           detachEvents();
           if (resolvePromise) { resolvePromise(null); resolvePromise = null; }
@@ -520,7 +513,6 @@
   function _canvasTouchEnd(e)   { brushEnd(); }
 
   function _zoomInput() { onZoom(); }
-  function _stickerSizeInput() { onStickerSizeChange(); }
   function _keyDown(e) { onKeyDown(e); }
 
   function attachEvents() {
@@ -542,7 +534,7 @@
 
     // sliders
     zoomSlider.addEventListener("input", _zoomInput);
-    stickerSizeSlider.addEventListener("input", _stickerSizeInput);
+
 
     // keyboard
     window.addEventListener("keydown", _keyDown);
@@ -565,7 +557,7 @@
     canvas.removeEventListener("touchend", _canvasTouchEnd);
 
     zoomSlider.removeEventListener("input", _zoomInput);
-    stickerSizeSlider.removeEventListener("input", _stickerSizeInput);
+
 
     window.removeEventListener("keydown", _keyDown);
   }
@@ -575,9 +567,15 @@
      ============================================================ */
   window.openPhotoEditor  = openPhotoEditor;
   window.closePhotoEditor = closePhotoEditor;
-
-  // The HTML buttons use onclick="closeEditor(true/false)" and onclick="setTool('…')"
-  window.closeEditor = function (done) { closePhotoEditor(done); };
   window.setTool     = function (name) { refs(); setTool(name); };
+
+  // Bind all editor buttons directly
+  document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("editorDone").addEventListener("click", (e) => { e.stopPropagation(); closePhotoEditor(true); });
+    document.getElementById("editorCancel").addEventListener("click", (e) => { e.stopPropagation(); closePhotoEditor(false); });
+    document.getElementById("tool-move").addEventListener("click", () => { refs(); setTool("move"); });
+    document.getElementById("tool-sticker").addEventListener("click", () => { refs(); setTool("sticker"); });
+    document.getElementById("tool-brush").addEventListener("click", () => { refs(); setTool("brush"); });
+  });
 
 })();

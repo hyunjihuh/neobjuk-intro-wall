@@ -154,13 +154,10 @@ textarea{resize:vertical;min-height:72px}
 .sticker-on-photo{position:absolute;cursor:grab;user-select:none;z-index:3;
   filter:drop-shadow(0 2px 4px rgba(0,0,0,.4));touch-action:none;line-height:1}
 .sticker-on-photo:active{cursor:grabbing}
-.sticker-on-photo .sticker-ui{display:none;position:absolute;top:-12px;right:-12px;gap:2px;z-index:5}
-.sticker-on-photo:hover .sticker-ui{display:flex}
-.sticker-ui button{width:20px;height:20px;border-radius:50%;border:none;font-size:.6rem;
-  cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;line-height:1}
-.sticker-ui .s-del{background:var(--accent2)}
-.sticker-ui .s-up{background:var(--accent)}
-.sticker-ui .s-down{background:var(--accent)}
+.sticker-on-photo .sticker-del{display:none;position:absolute;top:-8px;right:-8px;
+  width:18px;height:18px;border-radius:50%;border:none;background:var(--accent2);color:#fff;
+  font-size:.65rem;cursor:pointer;align-items:center;justify-content:center;z-index:5;line-height:1}
+.sticker-on-photo:hover .sticker-del{display:flex}
 .sticker-on-photo .resize-handle{display:none;position:absolute;right:-6px;bottom:-6px;
   width:14px;height:14px;background:#fff;border:2px solid var(--accent2);border-radius:50%;
   cursor:nwse-resize;z-index:4}

@@ -34,8 +34,8 @@
 <!-- Photo Editor (fullscreen) -->
 <div class="editor-overlay" id="editorOverlay">
   <div class="editor-top">
-    <button class="ebtn cancel" onclick="closeEditor(false)">Cancel</button>
-    <button class="ebtn done" onclick="closeEditor(true)">Done</button>
+    <button class="ebtn cancel" id="editorCancel">Cancel</button>
+    <button class="ebtn done" id="editorDone">Done</button>
   </div>
   <div class="editor-canvas-wrap" id="editorBox">
     <img class="editor-bg" id="editorImg" />
@@ -46,16 +46,12 @@
     <input type="range" id="editorZoom" min="100" max="300" value="100" />
   </div>
   <div class="editor-tools">
-    <button class="tool-btn active" id="tool-move" onclick="setTool('move')">Move</button>
-    <button class="tool-btn" id="tool-sticker" onclick="setTool('sticker')">Stickers</button>
-    <button class="tool-btn" id="tool-brush" onclick="setTool('brush')">Brush</button>
+    <button class="tool-btn active" id="tool-move">Move</button>
+    <button class="tool-btn" id="tool-sticker">Stickers</button>
+    <button class="tool-btn" id="tool-brush">Brush</button>
   </div>
   <div id="toolPanel-sticker" style="display:none">
     <div class="sticker-tray" id="editorStickerTray"></div>
-    <div class="editor-controls">
-      <span>Size</span>
-      <input type="range" id="stickerSize" min="20" max="80" value="36" />
-    </div>
   </div>
   <div id="toolPanel-brush" style="display:none">
     <div class="brush-colors" id="brushColors"></div>
