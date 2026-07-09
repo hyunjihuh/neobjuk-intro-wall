@@ -186,7 +186,22 @@
     el.style.top  = (box.offsetHeight / 2 - size / 2) + "px";
     el.style.position = "absolute";
 
-    // resize handle
+    // hover UI: delete + size up/down
+    const ui = document.createElement("div");
+    ui.className = "sticker-ui";
+    const btnUp = document.createElement("button");
+    btnUp.className = "s-up"; btnUp.textContent = "▲";
+    btnUp.onclick = e => { e.stopPropagation(); const s = parseFloat(el.style.fontSize)||36; el.style.fontSize = Math.min(120,s+6)+"px"; };
+    const btnDown = document.createElement("button");
+    btnDown.className = "s-down"; btnDown.textContent = "▼";
+    btnDown.onclick = e => { e.stopPropagation(); const s = parseFloat(el.style.fontSize)||36; el.style.fontSize = Math.max(16,s-6)+"px"; };
+    const btnDel = document.createElement("button");
+    btnDel.className = "s-del"; btnDel.textContent = "×";
+    btnDel.onclick = e => { e.stopPropagation(); el.remove(); if(selectedSticker===el) selectedSticker=null; };
+    ui.append(btnUp, btnDown, btnDel);
+    el.appendChild(ui);
+
+    // resize handle (corner drag)
     const handle = document.createElement("div");
     handle.className = "resize-handle";
     el.appendChild(handle);
