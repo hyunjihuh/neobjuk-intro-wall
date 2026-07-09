@@ -142,9 +142,8 @@ function render() {
         const introLine = parts[0] || "";
         const funLine = parts.slice(1).join(" · ") || "";
         mlist += `<div class="m${isLeader ? " is-leader" : ""}" style="top:${top}%;height:${cellH}%">
-          ${isLeader ? '<span class="crown">&#x1F451;</span>' : ''}
           <div class="m-info">
-            <div class="mn">${esc(m.name)}</div>
+            <div class="mn">${esc(m.name)}${isLeader ? ' <span class="crown">👑</span>' : ''}</div>
             ${introLine ? `<div class="mi-intro">${esc(introLine)}</div>` : ''}
             ${funLine ? `<div class="mi-fun">"${esc(funLine)}"</div>` : ''}
           </div>
