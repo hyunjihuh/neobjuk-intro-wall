@@ -174,4 +174,9 @@ textarea{resize:vertical;min-height:72px}
 
 /* responsive */
 @media(max-width:1200px){.canvas-inner{grid-template-columns:1fr;max-width:640px}}
-@media(max-width:480px){.team-body{flex-direction:column;align-items:center}}
+@media(max-width:680px){
+  .team-body{flex-direction:column;align-items:center}
+  .members{height:auto;position:static;display:flex;flex-direction:column;gap:8px;width:100%;margin-top:12px}
+  .m{position:static;height:auto}
+  .m-slot{position:static;height:auto}
+}
