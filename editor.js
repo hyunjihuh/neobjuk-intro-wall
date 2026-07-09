@@ -449,7 +449,8 @@
       // show overlay
       overlay.classList.add("on");
 
-      // load image
+      // load image (crossOrigin for CORS canvas export)
+      img.crossOrigin = "anonymous";
       img.onload = () => {
         requestAnimationFrame(() => {
           resetImage();
