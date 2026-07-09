@@ -132,17 +132,17 @@ textarea{resize:vertical;min-height:72px}
 .editor-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:50;display:none;
   flex-direction:column;align-items:center;justify-content:center}
 .editor-overlay.on{display:flex}
-.editor-top{width:100%;padding:12px 20px;display:flex;justify-content:space-between;align-items:center}
+.editor-top{width:100%;padding:12px 20px;display:flex;justify-content:space-between;align-items:center;position:relative;z-index:10}
 .editor-top .ebtn{border:none;border-radius:10px;padding:8px 18px;font-weight:700;font-size:.88rem;cursor:pointer}
 .editor-top .ebtn.cancel{background:rgba(255,255,255,.15);color:#fff}
 .editor-top .ebtn.done{background:var(--accent2);color:#fff}
 .editor-canvas-wrap{position:relative;width:360px;height:252px;background:#000;border-radius:10px;overflow:hidden}
 .editor-canvas-wrap img.editor-bg{position:absolute;user-select:none;-webkit-user-drag:none;pointer-events:none}
 .editor-canvas-wrap canvas.draw-layer{position:absolute;top:0;left:0;width:100%;height:100%;z-index:2}
-.editor-controls{padding:12px 0;display:flex;align-items:center;gap:12px}
+.editor-controls{padding:12px 0;display:flex;align-items:center;gap:12px;position:relative;z-index:10}
 .editor-controls span{color:#fff9;font-size:.75rem}
 .editor-controls input[type=range]{width:140px;accent-color:var(--accent2)}
-.editor-tools{display:flex;gap:6px;padding:8px 0}
+.editor-tools{display:flex;gap:6px;padding:8px 0;position:relative;z-index:10}
 .tool-btn{border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:8px 14px;background:transparent;
   color:#fff;font-size:.82rem;font-weight:600;cursor:pointer;transition:.15s}
 .tool-btn.active{background:var(--accent2);border-color:var(--accent2)}
@@ -155,6 +155,10 @@ textarea{resize:vertical;min-height:72px}
   filter:drop-shadow(0 2px 4px rgba(0,0,0,.4));touch-action:none;line-height:1}
 .sticker-on-photo:active{cursor:grabbing}
 .sticker-on-photo.selected{outline:2px dashed #fff;outline-offset:2px}
+.sticker-on-photo .resize-handle{display:none;position:absolute;right:-6px;bottom:-6px;
+  width:14px;height:14px;background:#fff;border:2px solid var(--accent2);border-radius:50%;
+  cursor:nwse-resize;z-index:4}
+.sticker-on-photo.selected .resize-handle{display:block}
 .brush-colors{display:flex;gap:6px;padding:4px 0}
 .brush-color{width:28px;height:28px;border-radius:50%;border:2px solid transparent;cursor:pointer}
 .brush-color.active{border-color:#fff}

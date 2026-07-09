@@ -178,6 +178,7 @@
   function placeSticker(emoji) {
     const el = document.createElement("div");
     el.className = "sticker-on-photo";
+    el.dataset.emoji = emoji;
     el.textContent = emoji;
     const size = parseInt(stickerSizeSlider.value, 10) || 36;
     el.style.fontSize = size + "px";
@@ -185,9 +186,44 @@
     el.style.top  = (box.offsetHeight / 2 - size / 2) + "px";
     el.style.position = "absolute";
 
+    // resize handle
+    const handle = document.createElement("div");
+    handle.className = "resize-handle";
+    el.appendChild(handle);
+    attachResizeHandle(el, handle);
+
     attachStickerEvents(el);
     box.appendChild(el);
     selectSticker(el);
+  }
+
+  function attachResizeHandle(el, handle) {
+    let startY = 0, startSize = 0;
+    function onStart(e) {
+      e.preventDefault(); e.stopPropagation();
+      const p = ptrXY(e);
+      startY = p.y;
+      startSize = parseFloat(el.style.fontSize) || 36;
+      function onMove(ev) {
+        ev.preventDefault();
+        const pp = ptrXY(ev);
+        const diff = pp.y - startY;
+        const newSize = Math.max(16, Math.min(120, startSize + diff * 0.5));
+        el.style.fontSize = newSize + "px";
+      }
+      function onEnd() {
+        window.removeEventListener("mousemove", onMove);
+        window.removeEventListener("mouseup", onEnd);
+        window.removeEventListener("touchmove", onMove);
+        window.removeEventListener("touchend", onEnd);
+      }
+      window.addEventListener("mousemove", onMove);
+      window.addEventListener("mouseup", onEnd);
+      window.addEventListener("touchmove", onMove, { passive: false });
+      window.addEventListener("touchend", onEnd);
+    }
+    handle.addEventListener("mousedown", onStart);
+    handle.addEventListener("touchstart", onStart, { passive: false });
   }
 
   function selectSticker(el) {
@@ -369,7 +405,7 @@
           const tctx = tc.getContext("2d");
           tctx.font = outSize + "px 'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif";
           tctx.textBaseline = "top";
-          tctx.fillText(s.textContent, 0, 0);
+          tctx.fillText(s.dataset.emoji || s.textContent, 0, 0);
           octx.drawImage(tc, sLeft * ratioX, sTop * ratioY);
           res();
         });
