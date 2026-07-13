@@ -141,7 +141,7 @@ function render() {
         const parts = m.intro.split(" · ");
         const introLine = parts[0] || "";
         const funLine = parts.slice(1).join(" · ") || "";
-        mlist += `<div class="m${isLeader ? " is-leader" : ""}" style="top:${top}%;height:${cellH}%">
+        mlist += `<div class="m${isLeader ? " is-leader" : ""}" style="top:${top}%;min-height:${cellH}%">
           <div class="m-info">
             <div class="mn">${esc(m.name)}${isLeader ? ' <span class="crown">👑</span>' : ''}</div>
             ${m.nickname ? `<div class="mi-nick">"${esc(m.nickname)}"</div>` : ''}
@@ -154,7 +154,7 @@ function render() {
           </div>
         </div>`;
       } else {
-        mlist += `<div class="m-slot" style="top:${top}%;height:${cellH}%;display:flex;align-items:center">
+        mlist += `<div class="m-slot" style="top:${top}%;min-height:${cellH}%;display:flex;align-items:center">
           <div class="m-add" style="width:100%" onclick="openAddMember('${esc(team)}')">
             <div class="plus">+</div><span>Join</span>
           </div>
@@ -332,17 +332,20 @@ document.getElementById("btn-submit-member").onclick = async function () {
   );
   if (existing) { st.textContent = "Someone with that name is already in this team!"; return; }
 
-  // Team full check
-  const teamMembers = rows.filter(r =>
-    r.team === modalTeam &&
-    Number(r.batch) === currentBatch &&
+  // Team full check — refetch latest data to prevent race condition
+  const btn = this;
+  btn.disabled = true;
+  st.textContent = "Checking team...";
+  const { data: freshRows } = await sb.from("members").select("*").eq("team", modalTeam);
+  const teamMembers = (freshRows || []).filter(r =>
+    (Number(r.batch) === currentBatch || modalTeam === ORG_TEAM) &&
     (r.role === "member" || r.role === "leader")
   );
   const maxM = modalTeam === ORG_TEAM ? 4 : 3;
-  if (teamMembers.length >= maxM) { st.textContent = "This team is full!"; return; }
-
-  const btn = this;
-  btn.disabled = true;
+  if (teamMembers.length >= maxM) { st.textContent = "This team is full!"; btn.disabled = false; return; }
+  // Also re-check duplicate with fresh data
+  const freshDup = teamMembers.find(r => r.name.toLowerCase() === name.toLowerCase());
+  if (freshDup) { st.textContent = "Someone with that name is already in this team!"; btn.disabled = false; return; }
 
   try {
     let blob;
@@ -586,9 +589,13 @@ document.getElementById("overlay").addEventListener("click", e => {
   if (e.target.id === "overlay") closeModal();
 });
 
-// Realtime subscription on members table
+// Realtime subscription — debounced to prevent flood when 70 students edit simultaneously
+let realtimeTimer = null;
 sb.channel("members-realtime")
-  .on("postgres_changes", { event: "*", schema: "public", table: "members" }, () => load())
+  .on("postgres_changes", { event: "*", schema: "public", table: "members" }, () => {
+    clearTimeout(realtimeTimer);
+    realtimeTimer = setTimeout(load, 500);
+  })
   .subscribe();
 
 /* -------------------- CALIBRATION -------------------- */
