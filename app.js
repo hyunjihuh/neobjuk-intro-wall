@@ -676,14 +676,11 @@ async function autoArrangeTeams() {
   if (!data) { toast("Failed to fetch data"); return; }
 
   // Only process current batch, skip ORG_TEAM and placeholders
-  console.log("Fetched rows:", data.length, "currentBatch:", currentBatch);
-  console.log("Sample row:", data[0]);
   const members = data.filter(r =>
     Number(r.batch) === currentBatch &&
     r.team !== ORG_TEAM &&
     r.role !== "placeholder"
   );
-  console.log("Filtered members:", members.length, members.map(m => m.name + "(" + m.team + ")"));
 
   // Group by current team
   const groupMap = new Map();
@@ -744,9 +741,6 @@ async function autoArrangeTeams() {
     }
   }
 
-  console.log("Auto arrange:", { full: full.length, pairs: pairs.length, solos: solos.length, finalTeams: finalTeams.length, updates: updates.length });
-  console.log("Final teams:", finalTeams.map((t,i) => "Team "+(i+1)+": "+t.map(m=>m.name).join(", ")));
-
   if (updates.length === 0) {
     toast("Already arranged!");
     return;
@@ -779,8 +773,8 @@ async function undoArrange() {
 }
 
 // Tab clicks switch batch
-document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => {
-  document.querySelectorAll(".tab").forEach(x => x.classList.remove("active"));
+document.querySelectorAll(".tab[data-batch]").forEach(t => t.addEventListener("click", () => {
+  document.querySelectorAll(".tab[data-batch]").forEach(x => x.classList.remove("active"));
   t.classList.add("active");
   currentBatch = Number(t.dataset.batch);
   render();
