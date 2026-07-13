@@ -655,6 +655,123 @@ if (isAdmin) {
   });
 }
 
+// ---- Admin: Auto Arrange Teams ----
+let arrangeBackup = null; // stores previous state for undo
+
+if (isAdmin) {
+  const arrangeBtn = document.getElementById("btn-auto-arrange");
+  const undoBtn = document.getElementById("btn-undo-arrange");
+  arrangeBtn.style.display = "";
+  arrangeBtn.addEventListener("click", autoArrangeTeams);
+  undoBtn.addEventListener("click", undoArrange);
+}
+
+async function autoArrangeTeams() {
+  if (!confirm("Auto arrange teams for Batch " + currentBatch + "?\n\nThis will:\n- Keep groups of 3 together\n- Keep groups of 2 + add a solo\n- Fill Team 1, 2, 3... in order")) return;
+
+  toast("Arranging teams...");
+
+  // Fetch fresh data
+  const { data } = await sb.from("members").select("*").order("created_at", { ascending: true });
+  if (!data) { toast("Failed to fetch data"); return; }
+
+  // Only process current batch, skip ORG_TEAM and placeholders
+  const members = data.filter(r =>
+    Number(r.batch) === currentBatch &&
+    r.team !== ORG_TEAM &&
+    r.role !== "placeholder"
+  );
+
+  // Group by current team
+  const groupMap = new Map();
+  for (const m of members) {
+    if (!groupMap.has(m.team)) groupMap.set(m.team, []);
+    groupMap.get(m.team).push(m);
+  }
+
+  // Separate into: full (3), pairs (2), solos (1)
+  const full = [];   // groups of 3 — keep as is
+  const pairs = [];  // groups of 2 — need 1 more
+  const solos = [];  // individuals
+
+  for (const [, group] of groupMap) {
+    if (group.length >= 3) {
+      full.push(group.slice(0, 3));
+      // if more than 3 somehow, extras become solos
+      for (let i = 3; i < group.length; i++) solos.push(group[i]);
+    } else if (group.length === 2) {
+      pairs.push(group);
+    } else {
+      solos.push(group[0]);
+    }
+  }
+
+  // Build final teams: full → pairs+solo → remaining solos in 3s
+  const finalTeams = [];
+
+  // 1. Full teams
+  for (const g of full) finalTeams.push(g);
+
+  // 2. Pairs + solo
+  for (const pair of pairs) {
+    if (solos.length > 0) {
+      finalTeams.push([...pair, solos.shift()]);
+    } else {
+      finalTeams.push(pair); // no solo left, stays as 2
+    }
+  }
+
+  // 3. Remaining solos → groups of 3
+  while (solos.length >= 3) {
+    finalTeams.push([solos.shift(), solos.shift(), solos.shift()]);
+  }
+  // leftover 1 or 2
+  if (solos.length > 0) {
+    finalTeams.push([...solos.splice(0)]);
+  }
+
+  // Assign Team 1, 2, 3...
+  const updates = [];
+  for (let i = 0; i < finalTeams.length; i++) {
+    const teamName = "Team " + (i + 1);
+    for (const m of finalTeams[i]) {
+      if (m.team !== teamName) {
+        updates.push({ id: m.id, team: teamName });
+      }
+    }
+  }
+
+  if (updates.length === 0) {
+    toast("Already arranged!");
+    return;
+  }
+
+  // Save backup for undo
+  arrangeBackup = members.map(m => ({ id: m.id, team: m.team }));
+
+  // Apply updates
+  for (const u of updates) {
+    await sb.from("members").update({ team: u.team }).eq("id", u.id);
+  }
+
+  await load();
+  document.getElementById("btn-undo-arrange").style.display = "";
+  toast("Done! " + finalTeams.length + " teams arranged, " + updates.length + " members moved.");
+}
+
+async function undoArrange() {
+  if (!arrangeBackup) { toast("Nothing to undo"); return; }
+  if (!confirm("Undo the last auto arrange?")) return;
+  toast("Undoing...");
+  for (const u of arrangeBackup) {
+    await sb.from("members").update({ team: u.team }).eq("id", u.id);
+  }
+  arrangeBackup = null;
+  document.getElementById("btn-undo-arrange").style.display = "none";
+  await load();
+  toast("Undo complete!");
+}
+
 // Tab clicks switch batch
 document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => {
   document.querySelectorAll(".tab").forEach(x => x.classList.remove("active"));
