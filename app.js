@@ -119,7 +119,13 @@ function render() {
     </div>`;
   }
 
-  for (const [team, list] of teams) {
+  const sortedTeams = [...teams.entries()].sort((a, b) => {
+    if (a[0] === ORG_TEAM) return -1;
+    if (b[0] === ORG_TEAM) return 1;
+    return a[0].localeCompare(b[0], undefined, { numeric: true });
+  });
+
+  for (const [team, list] of sortedTeams) {
     const isOrg = team === ORG_TEAM;
     const maxMembers = isOrg ? 4 : 3;
     const members = list
