@@ -741,6 +741,9 @@ async function autoArrangeTeams() {
     }
   }
 
+  console.log("Auto arrange:", { full: full.length, pairs: pairs.length, solos: solos.length, finalTeams: finalTeams.length, updates: updates.length });
+  console.log("Final teams:", finalTeams.map((t,i) => "Team "+(i+1)+": "+t.map(m=>m.name).join(", ")));
+
   if (updates.length === 0) {
     toast("Already arranged!");
     return;
