@@ -149,13 +149,13 @@ function render() {
             ${funLine ? `<div class="mi-fun">"${esc(funLine)}"</div>` : ''}
           </div>
           <div class="m-actions">
-            <button class="m-btn edit" onclick="openEdit(${m.id})" title="Edit">&#x270E;</button>
-            <button class="m-btn del" onclick="deleteMember(${m.id},'${esc(m.name)}')" title="Delete">&#x00D7;</button>
+            <button class="m-btn edit" data-action="edit" data-id="${m.id}" title="Edit">&#x270E;</button>
+            <button class="m-btn del" data-action="delete" data-id="${m.id}" data-name="${esc(m.name)}" title="Delete">&#x00D7;</button>
           </div>
         </div>`;
       } else {
         mlist += `<div class="m-slot" style="top:${top}%;min-height:${cellH}%;display:flex;align-items:center">
-          <div class="m-add" style="width:100%" onclick="openAddMember('${esc(team)}')">
+          <div class="m-add" style="width:100%" data-action="join" data-team="${esc(team)}">
             <div class="plus">+</div><span>Join</span>
           </div>
         </div>`;
@@ -167,14 +167,14 @@ function render() {
         <span class="dot"></span>
         <span class="tname">${esc(team)}</span>
         <span class="tcount">${cnt}/${maxMembers}</span>
-        <button onclick="deleteTeam('${esc(team)}')" title="Delete team" style="border:none;background:none;color:#ccc;font-size:.7rem;cursor:pointer;padding:4px;margin-left:2px">×</button>
+        <button data-action="delete-team" data-team="${esc(team)}" title="Delete team" style="border:none;background:none;color:#ccc;font-size:.7rem;cursor:pointer;padding:4px;margin-left:2px">×</button>
       </div>
       <div class="team-body">${frameHTML(members, isOrg)}
         <div class="members">${mlist}</div>
       </div></div>`;
   }
 
-  html += `<div class="add-team-card" onclick="openNewTeam()">
+  html += `<div class="add-team-card" data-action="new-team">
     <div class="big-plus">+</div><span>Add new team</span></div>`;
   wall.innerHTML = html;
 }
@@ -575,6 +575,18 @@ function changeEditPhoto() {
 }
 
 /* -------------------- EVENT WIRING -------------------- */
+
+// Event delegation for wall actions (no inline onclick)
+document.getElementById("wall").addEventListener("click", e => {
+  const btn = e.target.closest("[data-action]");
+  if (!btn) return;
+  const action = btn.dataset.action;
+  if (action === "join") openAddMember(btn.dataset.team);
+  else if (action === "edit") openEdit(Number(btn.dataset.id));
+  else if (action === "delete") deleteMember(Number(btn.dataset.id), btn.dataset.name);
+  else if (action === "delete-team") deleteTeam(btn.dataset.team);
+  else if (action === "new-team") openNewTeam();
+});
 
 // Tab clicks switch batch
 document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => {
