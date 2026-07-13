@@ -9,6 +9,8 @@ const BUCKET        = "photos";
 const FRAME_SRC     = "frame.png";
 const TEAM_PHOTO_SRC = "team-photo.jpg";
 const ORG_TEAM      = "Neobjuk Learning";
+const FIXED_TEAMS   = [ORG_TEAM, ...Array.from({length:20}, (_,i) => "Team " + (i+1))];
+function isFixedTeam(name) { return FIXED_TEAMS.includes(name); }
 
 /* -------------------- SUPABASE CLIENT -------------------- */
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -100,6 +102,8 @@ function frameHTML(members, isOrgTeam) {
 function render() {
   const br = rows.filter(r => Number(r.batch) === currentBatch || r.team === ORG_TEAM);
   const teams = new Map();
+  // Ensure all fixed teams exist
+  for (const ft of FIXED_TEAMS) teams.set(ft, []);
   for (const r of br) {
     if (!teams.has(r.team)) teams.set(r.team, []);
     teams.get(r.team).push(r);
@@ -176,15 +180,14 @@ function render() {
         <span class="dot"></span>
         <span class="tname">${esc(team)}</span>
         <span class="tcount">${cnt}/${maxMembers}</span>
-        <button data-action="delete-team" data-team="${esc(team)}" title="Delete team" style="border:none;background:none;color:#ccc;font-size:.7rem;cursor:pointer;padding:4px;margin-left:2px">×</button>
+        ${isFixedTeam(team) ? '' : '<button data-action="delete-team" data-team="' + esc(team) + '" title="Delete team" style="border:none;background:none;color:#ccc;font-size:.7rem;cursor:pointer;padding:4px;margin-left:2px">×</button>'}
       </div>
       <div class="team-body">${frameHTML(members, isOrg)}
         <div class="members">${mlist}</div>
       </div></div>`;
   }
 
-  html += `<div class="add-team-card" data-action="new-team">
-    <div class="big-plus">+</div><span>Add new team</span></div>`;
+  // Add team card hidden — teams are fixed 1~20
   wall.innerHTML = html;
 }
 
