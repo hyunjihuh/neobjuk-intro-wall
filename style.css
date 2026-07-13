@@ -72,6 +72,7 @@ body.cal .cal-panel{display:block}
 .members{flex:1;min-width:0;position:relative;height:560px}
 .m{border-left:3px solid var(--line);padding:6px 10px 6px 10px;border-radius:0 8px 8px 0;background:#fafcff;
   display:flex;align-items:flex-start;gap:6px;position:absolute;left:0;right:0;overflow:hidden}
+.m:hover{overflow:visible;z-index:5}
 .m.is-leader{border-left-color:#f0c040;background:#fffdf5}
 .m .crown{font-size:.8rem;flex-shrink:0;margin-top:1px}
 .m .m-info{flex:1;min-width:0}
