@@ -602,41 +602,56 @@ document.getElementById("wall").addEventListener("click", e => {
 
 // ---- Admin drag & drop ----
 if (isAdmin) {
-  const wall = document.getElementById("wall");
-  wall.addEventListener("dragstart", e => {
+  let dragMemberId = null;
+  let currentDropTarget = null;
+
+  document.addEventListener("dragstart", e => {
     const card = e.target.closest("[data-member-id]");
     if (!card) return;
-    e.dataTransfer.setData("text/plain", card.dataset.memberId);
-    card.style.opacity = "0.5";
+    dragMemberId = card.dataset.memberId;
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", dragMemberId);
+    setTimeout(() => card.style.opacity = "0.4", 0);
   });
-  wall.addEventListener("dragend", e => {
+
+  document.addEventListener("dragend", e => {
     const card = e.target.closest("[data-member-id]");
     if (card) card.style.opacity = "";
+    if (currentDropTarget) { currentDropTarget.style.outline = ""; currentDropTarget = null; }
+    dragMemberId = null;
   });
-  wall.addEventListener("dragover", e => {
-    const team = e.target.closest("[data-drop-team]");
-    if (team) { e.preventDefault(); team.style.outline = "2px dashed var(--accent)"; }
-  });
-  wall.addEventListener("dragleave", e => {
-    const team = e.target.closest("[data-drop-team]");
-    if (team) team.style.outline = "";
-  });
-  wall.addEventListener("drop", async e => {
+
+  document.addEventListener("dragover", e => {
+    if (!dragMemberId) return;
     e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
     const team = e.target.closest("[data-drop-team]");
-    if (!team) return;
-    team.style.outline = "";
-    const memberId = Number(e.dataTransfer.getData("text/plain"));
+    if (team !== currentDropTarget) {
+      if (currentDropTarget) currentDropTarget.style.outline = "";
+      currentDropTarget = team;
+      if (team) team.style.outline = "2px dashed #2f6db5";
+    }
+  });
+
+  document.addEventListener("drop", async e => {
+    e.preventDefault();
+    if (currentDropTarget) { currentDropTarget.style.outline = ""; }
+    const team = e.target.closest("[data-drop-team]");
+    if (!team || !dragMemberId) return;
+    const memberId = Number(dragMemberId);
     const targetTeam = team.dataset.dropTeam;
     const maxM = Number(team.dataset.max);
     const curCnt = Number(team.dataset.cnt);
     const member = rows.find(r => r.id === memberId);
     if (!member || member.team === targetTeam) return;
     if (curCnt >= maxM) { toast("That team is full!"); return; }
+    toast("Moving " + member.name + "...");
     const { error } = await sb.from("members").update({ team: targetTeam }).eq("id", memberId);
     if (error) { console.error(error); toast("Move failed"); return; }
     await load();
-    toast(member.name + " moved to " + targetTeam);
+    toast(member.name + " → " + targetTeam);
+    dragMemberId = null;
+    currentDropTarget = null;
   });
 }
 
