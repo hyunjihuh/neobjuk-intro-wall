@@ -152,6 +152,12 @@ function render() {
             <button class="m-btn edit" onclick="openEdit(${m.id})" title="Edit">&#x270E;</button>
             <button class="m-btn del" onclick="deleteMember(${m.id},'${esc(m.name)}')" title="Delete">&#x00D7;</button>
           </div>
+          <div class="m-popup">
+            <div class="mn">${esc(m.name)}${isLeader ? ' 👑' : ''}</div>
+            ${m.nickname ? `<div class="mi-nick">"${esc(m.nickname)}"</div>` : ''}
+            ${introLine ? `<div class="mi-intro">${esc(introLine)}</div>` : ''}
+            ${funLine ? `<div class="mi-fun">"${esc(funLine)}"</div>` : ''}
+          </div>
         </div>`;
       } else {
         mlist += `<div class="m-slot" style="top:${top}%;min-height:${cellH}%;display:flex;align-items:center">

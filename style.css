@@ -81,6 +81,16 @@ body.cal .cal-panel{display:block}
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .m .mi-fun{font-size:.8rem;color:var(--accent);margin-top:2px;line-height:1.3;font-style:italic;
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+/* hover popup for full text */
+.m .m-popup{display:none;position:absolute;left:0;top:100%;z-index:6;background:#fff;
+  border:1px solid var(--line);border-radius:10px;padding:10px 12px;box-shadow:0 4px 16px rgba(0,0,0,.15);
+  width:280px;max-width:90vw}
+.m:hover .m-popup{display:block}
+.m .m-popup .mn{font-weight:800;font-size:.95rem;margin-bottom:4px}
+.m .m-popup .mi-intro{font-size:.85rem;color:#3a4a5a;line-height:1.4;display:block;-webkit-line-clamp:unset;overflow:visible}
+.m .m-popup .mi-fun{font-size:.83rem;color:var(--accent);line-height:1.4;font-style:italic;margin-top:4px;display:block;-webkit-line-clamp:unset;overflow:visible}
+.m .m-popup .mi-nick{font-size:.8rem;color:var(--sub);margin-bottom:2px}
+
 .m .m-actions{position:absolute;top:4px;right:4px;display:flex;gap:2px}
 .m .m-btn{width:20px;height:20px;border-radius:50%;border:none;background:#f0f2f5;
   color:#999;font-size:.65rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s}
@@ -189,5 +199,6 @@ textarea{resize:vertical;min-height:72px}
   .members{height:auto;position:static;display:flex;flex-direction:column;gap:8px;width:100%;margin-top:12px}
   .m{position:static;height:auto;overflow:visible}
   .m .mi-intro,.m .mi-fun{display:block;-webkit-line-clamp:unset;overflow:visible}
+  .m .m-popup{display:none !important}
   .m-slot{position:static;height:auto}
 }
