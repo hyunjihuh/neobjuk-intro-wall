@@ -187,6 +187,10 @@ textarea{resize:vertical;min-height:72px}
   font-size:.9rem;z-index:40;transition:transform .3s ease;pointer-events:none}
 .toast.show{transform:translateX(-50%) translateY(0)}
 
+/* admin drag & drop */
+body.admin .m[draggable="true"]{cursor:grab}
+body.admin .m[draggable="true"]:active{cursor:grabbing}
+
 /* responsive */
 @media(max-width:1200px){.canvas-inner{grid-template-columns:1fr;max-width:640px}}
 @media(max-width:680px){

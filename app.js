@@ -12,8 +12,11 @@ const ORG_TEAM      = "Neobjuk Learning";
 
 /* -------------------- SUPABASE CLIENT -------------------- */
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-const isCal = new URLSearchParams(location.search).has("calibrate");
+const params = new URLSearchParams(location.search);
+const isCal = params.has("calibrate");
+const isAdmin = params.has("admin");
 if (isCal) document.body.classList.add("cal");
+if (isAdmin) document.body.classList.add("admin");
 
 /* -------------------- STATE -------------------- */
 let currentBatch   = 1;
@@ -141,7 +144,7 @@ function render() {
         const parts = m.intro.split(" · ");
         const introLine = parts[0] || "";
         const funLine = parts.slice(1).join(" · ") || "";
-        mlist += `<div class="m${isLeader ? " is-leader" : ""}" style="top:${top}%;min-height:${cellH}%">
+        mlist += `<div class="m${isLeader ? " is-leader" : ""}" style="top:${top}%;min-height:${cellH}%" ${isAdmin ? `draggable="true" data-member-id="${m.id}"` : ''}>
           <div class="m-info">
             <div class="mn">${esc(m.name)}${isLeader ? ' <span class="crown">👑</span>' : ''}</div>
             ${m.nickname ? `<div class="mi-nick">"${esc(m.nickname)}"</div>` : ''}
@@ -162,7 +165,7 @@ function render() {
       }
     }
 
-    html += `<div class="team">
+    html += `<div class="team" data-drop-team="${esc(team)}" data-max="${maxMembers}" data-cnt="${cnt}">
       <div class="team-header">
         <span class="dot"></span>
         <span class="tname">${esc(team)}</span>
@@ -587,6 +590,46 @@ document.getElementById("wall").addEventListener("click", e => {
   else if (action === "delete-team") deleteTeam(btn.dataset.team);
   else if (action === "new-team") openNewTeam();
 });
+
+// ---- Admin drag & drop ----
+if (isAdmin) {
+  const wall = document.getElementById("wall");
+  wall.addEventListener("dragstart", e => {
+    const card = e.target.closest("[data-member-id]");
+    if (!card) return;
+    e.dataTransfer.setData("text/plain", card.dataset.memberId);
+    card.style.opacity = "0.5";
+  });
+  wall.addEventListener("dragend", e => {
+    const card = e.target.closest("[data-member-id]");
+    if (card) card.style.opacity = "";
+  });
+  wall.addEventListener("dragover", e => {
+    const team = e.target.closest("[data-drop-team]");
+    if (team) { e.preventDefault(); team.style.outline = "2px dashed var(--accent)"; }
+  });
+  wall.addEventListener("dragleave", e => {
+    const team = e.target.closest("[data-drop-team]");
+    if (team) team.style.outline = "";
+  });
+  wall.addEventListener("drop", async e => {
+    e.preventDefault();
+    const team = e.target.closest("[data-drop-team]");
+    if (!team) return;
+    team.style.outline = "";
+    const memberId = Number(e.dataTransfer.getData("text/plain"));
+    const targetTeam = team.dataset.dropTeam;
+    const maxM = Number(team.dataset.max);
+    const curCnt = Number(team.dataset.cnt);
+    const member = rows.find(r => r.id === memberId);
+    if (!member || member.team === targetTeam) return;
+    if (curCnt >= maxM) { toast("That team is full!"); return; }
+    const { error } = await sb.from("members").update({ team: targetTeam }).eq("id", memberId);
+    if (error) { console.error(error); toast("Move failed"); return; }
+    await load();
+    toast(member.name + " moved to " + targetTeam);
+  });
+}
 
 // Tab clicks switch batch
 document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => {
