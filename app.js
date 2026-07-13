@@ -676,11 +676,14 @@ async function autoArrangeTeams() {
   if (!data) { toast("Failed to fetch data"); return; }
 
   // Only process current batch, skip ORG_TEAM and placeholders
+  console.log("Fetched rows:", data.length, "currentBatch:", currentBatch);
+  console.log("Sample row:", data[0]);
   const members = data.filter(r =>
     Number(r.batch) === currentBatch &&
     r.team !== ORG_TEAM &&
     r.role !== "placeholder"
   );
+  console.log("Filtered members:", members.length, members.map(m => m.name + "(" + m.team + ")"));
 
   // Group by current team
   const groupMap = new Map();
