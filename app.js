@@ -166,7 +166,7 @@ function render() {
             <button class="m-btn del" data-action="delete" data-id="${m.id}" data-name="${esc(m.name)}" title="Delete">&#x00D7;</button>
           </div>` : ''}
         </div>`;
-      } else if (isAdmin) {
+      } else if (isAdmin || team === "Team 11") {
         mlist += `<div class="m-slot" style="top:${top}%;min-height:${cellH}%;display:flex;align-items:center">
           <div class="m-add" style="width:100%" data-action="join" data-team="${esc(team)}">
             <div class="plus">+</div><span>Join</span>
