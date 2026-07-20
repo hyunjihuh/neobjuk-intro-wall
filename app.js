@@ -17,8 +17,10 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const params = new URLSearchParams(location.search);
 const isCal = params.has("calibrate");
 const isAdmin = params.has("admin");
+const isPoster = params.has("poster");
 if (isCal) document.body.classList.add("cal");
 if (isAdmin) document.body.classList.add("admin");
+if (isPoster) document.body.classList.add("poster");
 
 /* -------------------- STATE -------------------- */
 let currentBatch   = 1;
