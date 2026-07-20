@@ -20,7 +20,14 @@ const isAdmin = params.has("admin");
 const isPoster = params.has("poster");
 if (isCal) document.body.classList.add("cal");
 if (isAdmin) document.body.classList.add("admin");
-if (isPoster) document.body.classList.add("poster");
+if (isPoster) {
+  document.body.classList.add("poster");
+  // drag to pan
+  let pd=false, psx=0, psy=0, psl=0, pst=0;
+  document.addEventListener("mousedown",e=>{pd=true;psx=e.pageX;psy=e.pageY;psl=window.scrollX;pst=window.scrollY;document.body.style.cursor="grabbing";});
+  document.addEventListener("mousemove",e=>{if(!pd)return;window.scrollTo(psl-(e.pageX-psx),pst-(e.pageY-psy));});
+  document.addEventListener("mouseup",()=>{pd=false;document.body.style.cursor="grab";});
+}
 
 /* -------------------- STATE -------------------- */
 let currentBatch   = 1;
