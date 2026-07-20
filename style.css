@@ -188,21 +188,21 @@ textarea{resize:vertical;min-height:72px}
 .toast.show{transform:translateX(-50%) translateY(0)}
 
 /* poster view */
-body.poster{overflow:auto;cursor:grab}
-body.poster:active{cursor:grabbing}
 body.poster .topbar{display:none}
 body.poster .guide{display:none}
-body.poster .canvas{padding:20px;min-width:max-content}
-body.poster .canvas-inner{max-width:none;display:flex;flex-wrap:nowrap;gap:16px;justify-content:flex-start}
-body.poster .team{background:none;border:none;box-shadow:none;padding:0;width:auto;flex-shrink:0}
+body.poster .canvas{padding:24px}
+body.poster .canvas-inner{max-width:1200px;margin:0 auto;display:grid;
+  grid-template-columns:repeat(6,1fr);gap:16px}
+body.poster .team{background:none;border:none;box-shadow:none;padding:0;width:auto}
 body.poster .team:hover{box-shadow:none}
 body.poster .team-header{justify-content:center;margin-bottom:6px}
+body.poster .team-header .dot{display:none}
 body.poster .team-header .tcount,body.poster .team-header button{display:none}
-body.poster .team-header .tname{font-size:.85rem}
+body.poster .team-header .tname{font-size:.8rem}
 body.poster .team-body{display:block}
 body.poster .members{display:none}
-body.poster .frame{width:160px;height:320px}
-body.poster .frame .frameimg{width:160px;height:320px}
+body.poster .frame{width:100%;height:auto;aspect-ratio:887/1774}
+body.poster .frame .frameimg{width:100%;height:100%;object-fit:contain}
 body.poster .m-slot{display:none}
 body.poster .toast{display:none}
 
