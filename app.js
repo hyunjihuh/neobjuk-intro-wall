@@ -163,12 +163,12 @@ function render() {
             ${introLine ? `<div class="mi-intro">${esc(introLine)}</div>` : ''}
             ${funLine ? `<div class="mi-fun">"${esc(funLine)}"</div>` : ''}
           </div>
-          ${true ? `<div class="m-actions">
+          ${isAdmin ? `<div class="m-actions">
             <button class="m-btn edit" data-action="edit" data-id="${m.id}" title="Edit">&#x270E;</button>
             <button class="m-btn del" data-action="delete" data-id="${m.id}" data-name="${esc(m.name)}" title="Delete">&#x00D7;</button>
           </div>` : ''}
         </div>`;
-      } else {
+      } else if (isAdmin) {
         mlist += `<div class="m-slot" style="top:${top}%;min-height:${cellH}%;display:flex;align-items:center">
           <div class="m-add" style="width:100%" data-action="join" data-team="${esc(team)}">
             <div class="plus">+</div><span>Join</span>
