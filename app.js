@@ -163,7 +163,7 @@ function render() {
             ${introLine ? `<div class="mi-intro">${esc(introLine)}</div>` : ''}
             ${funLine ? `<div class="mi-fun">"${esc(funLine)}"</div>` : ''}
           </div>
-          ${isAdmin ? `<div class="m-actions">
+          ${(isAdmin || (currentBatch === 1 && team === "Team 20")) ? `<div class="m-actions">
             <button class="m-btn edit" data-action="edit" data-id="${m.id}" title="Edit">&#x270E;</button>
             <button class="m-btn del" data-action="delete" data-id="${m.id}" data-name="${esc(m.name)}" title="Delete">&#x00D7;</button>
           </div>` : ''}
